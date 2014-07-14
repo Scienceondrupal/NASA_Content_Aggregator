@@ -1,0 +1,813 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function feed_schema() {
+  
+  $schema['feed'] = array(
+    'description' => 'Stores feed information.',
+    'fields' => array(
+      'fid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed ID.',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this feed; initially, this is the user that created it.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+        'description' => 'The type of this feed, 1 = A default created feed, 2 = An imported feed, 3 = A feed subscription.',
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'Serialized data containing the field properties that do not warrant a dedicated column.',
+      ),
+      'created_at' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'When the feed was created, as a Unix timestamp.',
+      ),
+      'updated_at' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'When the feed was updated, as a Unix timestamp.',
+      ),
+    ),
+    'primary key' => array('fid'),
+    'foreign keys' => array(
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+
+  $schema['feed_item_subscription'] = array(
+    'descriptin' => 'Stores feed item subscriptions information.',
+    'fields' => array(
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed}.fid of the feed to which the feed item subscription is assigned.',
+      ),
+      'fiid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_item}.fiid of the feed item to which the feed item subscription is assigned.',
+      ),
+    ),
+    'primary key' => array('fid', 'fiid'),
+    'indexes' => array(
+      'feed' => array('fid'),
+      'feed_item' => array('fiid'),
+    ),
+    'foreign keys' => array(
+      'feed' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+      'feed_item' => array(
+        'table' => 'feed_item',
+        'columns' => array('fiid' => 'fiid'),
+      ),
+    ),
+  );
+
+  $schema['feed_item'] = array(
+    'description' => 'Stores feed items information.',
+    'fields' => array(
+      'fiid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed item ID.',
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed}.fid of the feed to which the feed item is assigned.',
+      ),
+      'created_at' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'When the feed item was created, as a Unix timestamp.',
+      ),
+      'updated_at' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => NULL,
+        'description' => 'When the feed item was updated, as a Unix timestamp.',
+      ),
+    ),
+    'primary key' => array('fiid'),
+    'foreign keys' => array(
+      'feeds' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+    'indexes' => array(
+      'feeds' => array('fid'),
+    ),
+  );
+  $schema['feed_field'] = array(
+    'description' => 'Stores the feeds additional fields.',
+    'fields' => array(
+      'ffid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed field ID.',
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed}.fid of the feed to which the feed field is assigned.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of this field.',
+      ),
+      'tag' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The tagname of this field.',
+      ),
+      'namespace' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The namespace of this field.',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'description' => 'The type of this field.',
+      ),
+     	'module' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The module that implements the field type.',
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'Serialized data containing the field properties that do not warrant a dedicated column.',
+      ),
+      'is_feed_item_field' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Indicates whether this field is a feed item field for this feed.',
+      ),
+      'is_required' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Indicates whether this field is a required field.',
+      ),
+    ),
+    'primary key' => array('ffid'),
+    'foreign keys' => array(
+      'feeds' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+    'indexes' => array(
+      'feed_field' => array('fid', 'ffid'),
+      'field' => array('ffid'),
+    ),
+  );
+  
+  $schema['feed_field_value'] = array(
+    'description' => 'Stores the feed field\'s value information.',
+    'fields' => array(
+      'ffvid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed field value ID.',
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed}.fid of the feed to which value was assigned.',
+      ),
+      'ffid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_field}.ffid of the feed fields to which value was attached.',
+      ),
+    ),
+    'primary key' => array('ffvid'),
+    'foreign keys' => array(
+      'feeds_items' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+      'feeds_fields' => array(
+        'table' => 'feed_field',
+        'columns' => array('ffid' => 'ffid'),
+      ),
+    ),
+    'indexes' => array(
+      'feed_item_field' => array('fid', 'ffid'),
+    ),
+  );
+  
+  $schema['feed_field_value_data'] = array(
+    'description' => 'Stores the feed field\'s value data.',
+    'fields' => array(
+      'ffvid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_field_value|.ffvid to which data was assigned.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of the data.',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of the data.',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'The value of the data.',
+      ),
+    ),
+    'primary key' => array('ffvid', 'name'),
+    'foreign keys' => array(
+      'feed_field_value' => array(
+        'table' => 'feed_field_value',
+        'columns' => array('ffvid' => 'ffvid'),
+      ),
+    ),
+    'indexes' => array(
+      'feed_field_value' => array('ffvid'),
+    ),
+  );
+  
+  $schema['feed_item_field_value'] = array(
+    'description' => 'Stores the feed item\'s additional field information.',
+    'fields' => array(
+      'fifvid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed item field value ID.',
+      ),
+      'fiid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_item}.fiid of the feed item to which value was assigned.',
+      ),
+      'ffid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_field}.ffid of the feed fields to which value was attached.',
+      ),
+    ),
+    'primary key' => array('fifvid'),
+    'foreign keys' => array(
+      'feeds_items' => array(
+        'table' => 'feed_item',
+        'columns' => array('fiid' => 'fiid'),
+      ),
+      'feeds_fields' => array(
+        'table' => 'feed_field',
+        'columns' => array('ffid' => 'ffid'),
+      ),
+    ),
+    'indexes' => array(
+      'feed_item_field' => array('fiid', 'ffid'),
+    ),
+  );
+  
+  $schema['feed_item_field_value_data'] = array(
+    'description' => 'Stores the feed item field\'s value data.',
+    'fields' => array(
+      'fifvid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_item_field_value|.fifvid to which data was assigned.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of this data.',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The type of this data.',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'The value of the data.',
+      ),
+    ),
+    'primary key' => array('fifvid', 'name'),
+    'foreign keys' => array(
+      'feed_item_field_value' => array(
+        'table' => 'feed_item_field_value',
+        'columns' => array('fifvid' => 'fifvid'),
+      ),
+    ),
+    'indexes' => array(
+      'feed_item_field_value' => array('fifvid'),
+    ),
+  );
+  
+  $schema['feed_widget'] = array(
+    'description' => 'Stores feed widget configuration information.',
+    'fields' => array(
+      'fwid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The {feed_widget}.fwid of the feed widget.',
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {user}.uid of the user.',
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed}.fid of the feed.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the feed widget.',
+        'translatable' => TRUE,
+      ),
+      'file' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Internal path to the cached file.',
+      ),
+      'configuration' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'The configuration of the widget.',
+      ),
+    ),
+    'primary key' => array('fwid'),
+    'foreign keys' => array(
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+      'feed' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_newsletter_subscriber'] = array(
+    'description' => 'Stores feed newsletter subscriber information.',
+    'fields' => array(
+      'fnsid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The {feed_newsletter_subscriber}.fnsid of the feed newsletter subscriber.',
+      ),
+      'fnid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_newsletter}.fnid of the feed newsletter.',
+      ),
+      'email' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Email of the feed email.',
+      ),
+      'configuration' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'The configuration of the email.',
+      ),
+    ),
+    'primary key' => array('fnsid'),
+    'foreign keys' => array(
+      'feed_newsletter' => array(
+        'table' => 'feed_newsletter',
+        'columns' => array('fnid' => 'fnid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_newsletter'] = array(
+    'description' => 'Stores feed newsletter configuration information.',
+    'fields' => array(
+      'fnid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The {feed_newsletter}.fnid of the feed newsletter.',
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {user}.uid of the user.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the feed newsletter.',
+        'translatable' => TRUE,
+      ),
+      'configuration' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'The configuration of the newsletter.',
+      ),
+    ),
+    'primary key' => array('fnid'),
+    'foreign keys' => array(
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_subscription_filter'] = array(
+    'description' => 'Stores feed subscription configuration filter information.',
+    'fields' => array(
+      'fsfid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The {feed_subscription_filter}.fsfid of the feed subscription filter.',
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed}.fid of the feed subscription.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the feed subscription filter.',
+        'translatable' => TRUE,
+      ),
+      'configuration' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+        'description' => 'The configuration of the filter.',
+      ),
+    ),
+    'primary key' => array('fsfid'),
+    'foreign keys' => array(
+      'feed' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_category'] = array(
+    'description' => 'Stores the feed\'s category list.',
+    'fields' => array(
+      'fcid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed category ID.',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this feed category; initially, this is the user that created it.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the category.',
+        'translatable' => TRUE,
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Description of the feed category.',
+        'translatable' => TRUE,
+      ),
+      'is_public' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Allow other feed administrator to add to category.',
+      ),
+    ),
+    'primary key' => array('fcid'),
+    'foreign keys' => array(
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_category_term'] = array(
+    'description' => 'Stores the feed\'s category terms.',
+    'fields' => array(
+      'fctid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed category term ID.',
+      ),
+      'fcid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {feed_category}.fcid of the category to which the term is assigned.',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this feed category; initially, this is the user that created it.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The term name.',
+        'translatable' => TRUE,
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The weight of this term in relation to other terms.',
+      ),
+    ),
+    'primary key' => array('fctid'),
+    'foreign keys' => array(
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_category_term_index'] = array(
+    'description' => 'Maintains relationship between feed and category term.',
+    'fields' => array(
+      'fid' => array(
+        'description' => 'The {feed}.fid this record tracks.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'fctid' => array(
+         'description' => 'The feed category term ID.',
+         'type' => 'int',
+         'unsigned' => TRUE,
+         'not null' => TRUE,
+         'default' => 0,
+      ),
+    ),
+    'primary key' => array('fid', 'fctid'),
+    'indexes' => array(
+      'category_term' => array('fid', 'fctid'),
+      'feed' => array('fid'),
+    ),
+    'foreign keys' => array(
+      'feed' => array(
+        'table' => 'feed',
+        'columns' => array('fid' => 'fid'),
+      ),
+      'category_term' => array(
+        'table' => 'feed_category_term',
+        'columns' => array('fctid' => 'fctid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_item_category_term_index'] = array(
+    'description' => 'Maintains relationship between feed item and category term.',
+    'fields' => array(
+      'fiid' => array(
+        'description' => 'The {feed_item}.fiid this record tracks.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'fctid' => array(
+         'description' => 'The feed category term ID.',
+         'type' => 'int',
+         'unsigned' => TRUE,
+         'not null' => TRUE,
+         'default' => 0,
+      ),
+    ),
+    'primary key' => array('fiid', 'fctid'),
+    'indexes' => array(
+      'category_term' => array('fiid', 'fctid'),
+      'feed_item' => array('fiid'),
+    ),
+    'foreign keys' => array(
+      'feed_item' => array(
+        'table' => 'feed_item',
+        'columns' => array('fiid' => 'fiid'),
+      ),
+      'category_term' => array(
+        'table' => 'feed_category_term',
+        'columns' => array('fctid' => 'fctid'),
+      ),
+    ),
+  );
+  
+  $schema['feed_group'] = array(
+    'description' => 'Stores the feed\'s group.',
+    'fields' => array(
+      'fgid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique feed group ID.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The group name.',
+        'translatable' => TRUE,
+      ),
+      'description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The description of this group.',
+      ),
+      'pfgid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The parent {feed_group}.fgid of this group.',
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The weight of this group in relation to other groups.',
+      ),
+    ),
+    'primary key' => array('fgid'),
+    'foreign keys' => array(
+    ),
+  );
+  
+  $schema['feed_user_group'] = array(
+    'description' => 'Stores the feed\'s user group.',
+    'fields' => array(
+      'fgid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The {feed_group}.fugid of the feed group this user belongs to.',
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {user}.uid of the user.',
+      ),
+      'primary_group' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Indicates whether this group is the user\'s primary group.',
+      ),
+    ),
+    'primary key' => array('fgid', 'uid'),
+    'foreign keys' => array(
+      'feed_group' => array(
+        'table' => 'feed_group',
+        'columns' => array('fgid' => 'fgid'),
+      ),
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+  return $schema;
+}

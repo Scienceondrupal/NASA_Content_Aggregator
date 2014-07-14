@@ -1,0 +1,7 @@
+name = EOSDIS Feeds Module
+description = "RSS, RDF, and Atom content syndication."
+package = EOSDIS
+core = 7.x
+
+scripts[] = js/feed.js
+stylesheets[all][] = css/feed.css

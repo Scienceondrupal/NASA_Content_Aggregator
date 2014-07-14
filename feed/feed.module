@@ -1,0 +1,1781 @@
+<?php 
+
+// Include theming functions
+module_load_include('inc', 'feed', 'feed.theme');
+
+// Include access functions
+module_load_include('inc', 'feed', 'feed.access');
+
+// Include feed cron files
+module_load_include('inc', 'feed', 'feed.cron');
+
+// Include feed group files
+module_load_include('inc', 'feed', 'group/feed.group');
+
+// Include feed category files
+module_load_include('inc', 'feed', 'category/feed.category');
+
+// Include feed subscription files
+module_load_include('inc', 'feed', 'subscription/feed.subscribe');
+module_load_include('inc', 'feed', 'subscription/feed.subscription');
+module_load_include('inc', 'feed', 'subscription/feed.subscription-filter');
+
+// Include default feed field types
+module_load_include('inc', 'feed', 'types/feed.field.types');
+
+// Include pagers
+module_load_include('inc', 'feed', 'pager/feed-item.pager');
+
+// Include feed files
+module_load_include('inc', 'feed', 'feed/feed');
+module_load_include('inc', 'feed', 'feed/feed.field');
+module_load_include('inc', 'feed', 'feed/feed.field-value');
+
+// Include feed item files
+module_load_include('inc', 'feed', 'feed-item/feed-item');
+module_load_include('inc', 'feed', 'feed-item/feed-item.field');
+module_load_include('inc', 'feed', 'feed-item/feed-item.field-value');
+
+// Include feed fetcher, parser, and formatter files
+module_load_include('inc', 'feed', 'fetcher/feed.update');
+module_load_include('inc', 'feed', 'fetcher/feed.fetcher');
+module_load_include('inc', 'feed', 'parser/feed.parser');
+module_load_include('inc', 'feed', 'parser/feed.parser.types');
+module_load_include('inc', 'feed', 'formatter/feed.formatter');
+module_load_include('inc', 'feed', 'formatter/feed.formatter.types');
+
+// Include feed widget files
+module_load_include('inc', 'feed', 'admin/feed-widget.admin');
+module_load_include('inc', 'feed', 'widget/feed.widget');
+
+// Include feed email files
+module_load_include('inc', 'feed', 'email/feed.emailer');
+module_load_include('inc', 'feed', 'email/feed.newsletter');
+module_load_include('inc', 'feed', 'email/feed.newsletter-subscriber');
+module_load_include('inc', 'feed', 'admin/feed-newsletter.admin');
+
+/**
+ * Denotes that a feed's items should never expire.
+ */
+define('FEED_CLEAR_NEVER', 0);
+
+/**
+ * Denotes that a feed field can have unlimited values.
+ */
+define('FEED_CARDINALITY_UNLIMITED', -1);
+
+/**
+ * Denotes feed types that are created through CRUD.
+ */
+define('FEED_TYPE_CREATED', 1);
+
+/**
+ * Denotes feed types that are created url imports.
+ */
+define('FEED_TYPE_IMPORTED', 2);
+
+/**
+ * Denotes feed types that are created subscriptions.
+ */
+define('FEED_TYPE_SUBSCRIBED', 3);
+
+/**
+ * Denotes feed data type key for attributes.
+ */
+define('FEED_DATA_TYPE_FIELD_ATTRIBUTE', 'attribute');
+
+/**
+ * Denotes feed field value data type key for values.
+ */
+define('FEED_DATA_TYPE_FIELD_VALUE', 'field');
+
+/**
+ * Denotes feed field data key for a feed field structure.
+ */
+define('FEED_DATA_FEED_FIELD_STRUCTURE', 'structure');
+
+/**
+ * Denotes feed field data key for a feed field display settings.
+ */
+define('FEED_DATA_FEED_FIELD_DISPLAY_SETTINGS', 'field_display_settings');
+
+/**
+ * Denotes feed data key for enabled feed field displays.
+ */
+define('FEED_DATA_FEED_FIELD_DISPLAY_ENABLED', 'field_display_enabled');
+
+/**
+ * Denotes feed data key for a feed namespace.
+ */
+define('FEED_DATA_FEED_NAMESPACE', 'namespace');
+
+/**
+ * Denotes feed data key for an imported feed parser.
+ */
+define('FEED_DATA_FEED_PARSER', 'parser');
+
+/**
+ * Denotes feed data key for an imported feed update url.
+ */
+define('FEED_DATA_FEED_UPDATE_URL', 'update_url');
+
+/**
+ * Denotes feed data key for an imported feed update refresh frequency.
+ */
+define('FEED_DATA_FEED_UPDATE_FREQ', 'update_freq');
+
+/**
+ * Denotes feed data key for an imported feed update queued status.
+ */
+define('FEED_DATA_FEED_UPDATE_QUEUED', 'update_queued');
+
+/**
+ * Denotes feed data key for an imported feed update refresh time.
+ */
+define('FEED_DATA_FEED_UPDATE_REFRESH', 'update_refresh');
+
+/**
+ * Denotes feed data key for a subscription feed's filter refresh time.
+ */
+define('FEED_DATA_FEED_SUBSCRIBE_REFRESH_FILTER', 'subscribe_refresh_filter');
+
+/**
+ * Denotes feed data key for a subscription feed subscribe queued status.
+ */
+define('FEED_DATA_FEED_SUBSCRIBE_QUEUED', 'subscribe_queued');
+
+/**
+ * Denotes feed data key for a subscription feed subscribe refresh time.
+ */
+define('FEED_DATA_FEED_SUBSCRIBE_REFRESH', 'subscribe_refresh');
+
+/**
+ * Denotes feed data key for a subscription feed subscribe refresh interval.
+ */
+define('FEED_DATA_FEED_SUBSCRIBE_INTERVAL', 'subscribe_interval');
+
+/**
+ * Defines feed data key for feed email newsletter frequency.
+ */
+define('FEED_EMAIL_CONFIG_FREQ', 'email_frequency');
+
+/**
+ * Denotes feed data key for a feed newsletter refresh time.
+ */
+define('FEED_EMAIL_CONFIG_REFRESH', 'email_refresh');
+
+/**
+ * Denotes feed data key for a feed newsletter refresh time.
+ */
+define('FEED_EMAIL_CONFIG_QUEUED', 'email_queued');
+
+/**
+ * Denotes feed data key for a feed email refresh interval.
+ */
+define('FEED_EMAIL_CONFIG_INTERVAL', 'email_interval');
+
+/**
+ * Defines file path for feed widget javascript.
+ */
+define('FEED_WIDGET_FILE_CACHE_PATH', 'public://feed/widget');
+
+/**
+ * Implements hook_help().
+ */
+function feed_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#feed':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Feeds module is EOSDIS\'s on-site syndicator and feed reader that gathers and displays fresh content from RSS-, RDF-, and Atom-based feeds made available across the web. Thousands of sites (particularly news sites and blogs) publish their latest headlines in feeds, using a number of standardized XML-based formats.') . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Viewing feeds') . '</dt>';
+      $output .= '<dd>' . t('Feeds contain published content, and may be grouped in categories, generally by topic. Users view feed content in the <a href="@feeds">main feeds display</a>, or by <a href="@feed-sources">their source</a> (usually via an RSS feed reader). The most recent content in a feed or category can be displayed as a block through the <a href="@admin-block">Blocks administration page</a>.', array('@feeds' => url('feed'), '@feeds-sources' => url('feed/sources'), '@admin-block' => url('admin/structure/block'))) . '</a></dd>';
+      $output .= '<dt>' . t('Adding, editing, and deleting feeds') . '</dt>';
+      $output .= '<dd>' . t('Administrators can add, edit, and delete feeds, and choose how often to check each feed for newly updated items on the <a href="@feededit">Feed aggregator administration page</a>.', array('@feededit' => url('admin/config/services/feeds'))) . '</dd>';
+      $output .= '<dt>' . t('Configuring cron') . '</dt>';
+      $output .= '<dd>' . t('A correctly configured <a href="@cron">cron maintenance task</a> is required to update feeds automatically.', array('@cron' => 'http://drupal.org/cron')) . '</dd>';
+      $output .= '</dl>';
+      return $output;
+    case 'admin/config/services/feed':
+      $output = '<p>' . t('Thousands of sites (particularly news sites and blogs) publish their latest headlines and posts in feeds, using a number of standardized XML-based formats. Formats supported by the aggregator include <a href="@rss">RSS</a>, <a href="@rdf">RDF</a>, and <a href="@atom">Atom</a>.', array('@rss' => 'http://cyber.law.harvard.edu/rss/', '@rdf' => 'http://www.w3.org/RDF/', '@atom' => 'http://www.atomenabled.org')) . '</p>';
+      $output .= '<p>' . t('Current feeds are listed below, and <a href="@addfeed">new feeds may be added</a>. For each feed or feed category, the <em>latest items</em> block may be enabled at the <a href="@block">blocks administration page</a>.', array('@addfeed' => url('admin/config/services/feeds/add/feed'), '@block' => url('admin/structure/block'))) . '</p>';
+      return $output;
+    case 'admin/config/services/feed/add/feed':
+      return '<p>' . t('Add a feed in RSS, RDF or Atom format. A feed may only have one entry.') . '</p>';
+    case 'admin/config/services/feed/add/category':
+      return '<p>' . t('Categories allow feed items from different feeds to be grouped together. For example, several sport-related feeds may belong to a category named <em>Sports</em>. Feed items may be grouped automatically (by selecting a category when creating or editing a feed) or manually (via the <em>Categorize</em> page available from feed item listings). Each category provides its own feed page and block.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function feed_theme() {
+  $items['feed_field_value_attach'] = array(
+    'file' => 'feed/feed.field-value.inc',
+    'render element' => 'elements',
+  );
+  $items['feed_field_attach'] = array(
+    'file' => 'feed/feed.field.inc',
+    'render element' => 'elements',
+  );
+  
+  $items['feed_item_field_attach'] = array(
+    'file' => 'feed-item/feed-item.field.inc',
+    'render element' => 'elements',
+  );
+  $items['feed_item_select'] = array(
+    'file' => 'feed-item/feed-item.inc',
+    'render element' => 'elements',
+  );
+  
+  $items['feed_fieldset'] = array(
+    'render element' => 'element',
+  );
+  $items['feed_table'] = array(
+    'render element' => 'element',
+  );
+  $items['feed_block'] = array(
+    'template' => 'templates/feed-block',
+    'variables' => array(
+      'content' => array(),
+      'title' => array(),
+      'attributes' => array(),
+    ),
+  );
+  $items['feed_widget'] = array(
+    'template' => 'templates/feed-widget.js',
+    'variables' => array(
+      'selector' => '',
+      'configuration' => array(),
+    ),
+  );
+  
+  $items['feed_category_term'] = array(
+    'file' => 'category/feed.category.inc',
+    'render element' => 'elements',
+  );
+  $items['feed_user_group'] = array(
+    'file' => 'group/feed.group.inc',
+    'render element' => 'elements',
+  );
+  $items['feed_category_term_autocomplete'] = array(
+    'render element' => 'element',
+  );
+  $items['feed_category_term_autocomplete_item'] = array(
+    'render element' => 'element',
+  );
+  
+  $items['feed_newsletter'] = array(
+    'template' => 'templates/feed-newsletter',
+    'variables' => array(
+      'feeds' => array(),
+      'name' => NULL,
+    ),
+  );
+  
+  $items['feed_web_formatter'] = array(
+    'render element' => 'element',
+    'template' => 'formatter/web/feed-formatter.web',
+    'file' => 'formatter/web/feed-formatter.web.inc',
+  );
+  $items['feed_item_web_formatter'] = array(
+    'render element' => 'element',
+    'template' => 'formatter/web/feed-item-formatter.web',
+    'file' => 'formatter/web/feed-formatter.web.inc',
+  );
+  return $items;
+}
+
+/**
+ * Preprocess feed block method;
+ */
+function feed_preprocess_feed_block(&$variables) {
+  if (isset($variables['attributes'])) {
+    if (isset($variables['attributes']['class'])) {
+      $variables['classes_array'] = $variables['attributes']['class'];
+    }
+    $variables['attributes_array'] = $variables['attributes']; 
+  }
+  if (!isset($variables['title_attributes_array']['class'])) {
+    $variables['title_attributes_array']['class'] = array();
+  }
+  if (!isset($variables['content_attributes_array']['class'])) {
+    $variables['content_attributes_array']['class'] = array();
+  }
+  if (!in_array('feed-block', $variables['classes_array'])) {
+    $variables['classes_array'][] = 'feed-block';
+  }
+  $variables['classes_array'][] = 'feed-block';
+  $variables['title_attributes_array']['class'][] = 'feed-block-title';
+  $variables['content_attributes_array']['class'][] = 'feed-block-content';
+}
+
+/**
+ * Implements hook_element_info().
+ */
+function feed_element_info() {
+  return array(
+    'feed_user_group' => array(
+      '#theme' => 'feed_user_group',
+    ),
+    'feed_item_select' => array(
+      '#theme' => 'feed_item_select',
+    ),
+    'feed_table' => array(
+      '#theme' => 'feed_table',
+    ),
+    'feed_item_filter' => array(
+      '#input' => TRUE,
+      '#process' => array('form_process_feed_item_filter'),
+    	'#after_build' => array('form_after_build_feed_item_filter'),
+    ),
+    'feed_item_select' => array(
+      '#input' => TRUE,
+      '#tree' => TRUE,
+      '#theme' => 'feed_item_select',
+      '#process' => array('form_process_feed_item_select'),
+    	'#element_validate' => array('form_validate_feed_item_select'),
+    ),
+    'feed_item_criteria' => array(
+      '#input' => TRUE,
+      '#tree' => TRUE,
+      '#process' => array('form_process_feed_item_criteria'),
+      '#element_validate' => array('form_validate_feed_item_criteria'),
+    ),
+    'feed_field_widget' => array(
+      '#input' => TRUE,
+      '#process' => array('form_process_feed_field_widget'),
+    	'#element_validate' => array('form_validate_feed_field_widget'),
+    ),
+    'feed_item_field_widget' => array(
+      '#input' => TRUE,
+      '#process' => array('form_process_feed_item_field_widget'),
+    	'#element_validate' => array('form_validate_feed_item_field_widget'),
+    ),
+    'feed_fieldset' => array(
+      '#theme_wrappers' => array('feed_fieldset'),
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+      '#value' => NULL, 
+      '#process' => array('form_process_fieldset', 'ajax_process_form'), 
+      '#pre_render' => array('form_pre_render_fieldset'),
+    ),
+    'feed_category_term' => array(
+      '#theme' => 'feed_category_term',
+    ),
+    'feed_category_term_autocomplete' => array(
+      '#input' => TRUE,
+      '#process' => array('form_process_feed_category_term_autocomplete'),
+      '#theme_wrappers' => array('feed_category_term_autocomplete', 'form_element'),
+    ),
+    'feed_category_term_autocomplete_item' => array(
+      '#input' => TRUE,
+      '#theme' => 'feed_category_term_autocomplete_item',
+    ),
+    'feed_date' => array(
+      '#input' => TRUE,
+      '#process' => array('form_process_feed_date'),
+    	'#element_validate' => array('form_validate_feed_date'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function feed_menu() {
+  $items['feed'] = array(
+    'title' => 'Federated Content Tool',
+    'description' => 'Manage feeds.',
+    'page callback' => 'feed_overview',
+    'access arguments' => array('eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+  );
+  $items['feed/feed'] = array(
+    'title' => 'My Feeds',
+    'description' => 'Manage feeds.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -15,
+  );
+  $items['feed/subscriptions'] = array(
+    'title' => 'My Subscriptions',
+    'description' => 'Manage feed subscriptions.',
+    'page callback' => 'feed_subscription_overview',
+    'page arguments' => array(1),
+    'access arguments' => array('eosdis admin feed'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-subscription.admin.inc',
+    'weight' => -10,
+  );
+  $items['feed/all'] = array(
+    'title' => 'All Feeds',
+    'description' => 'View all feeds.',
+    'page callback' => 'feed_all_overview',
+    'page arguments' => array(),
+    'access arguments' => array('eosdis admin feed'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed.admin.inc',
+    'weight' => -5,
+  );
+  $items['feed/all/subscription/%feed'] = array(
+    'title' => 'Subscribe to Feed',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscribe_form', 3),
+    'access arguments' => array('eosdis admin feed'),
+    'file' => 'admin/feed-subscription.admin.inc',
+  );
+  $items['feed/add'] = array(
+    'title' => 'Add Feed',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_form'),
+    'access arguments' => array('eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+    'weight' => -15,
+  );
+  $items['feed/import'] = array(
+    'title' => 'Import Feed',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_import_form'),
+    'access arguments' => array('eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+    'weight' => -10,
+  );
+  $items['feed/categories'] = array(
+    'title' => 'Categories',
+    'description' => 'Manage feed categories.',
+    'page callback' => 'feed_category_overview',
+    'access arguments' => array('eosdis admin feed category'),
+    'file' => 'admin/feed-category.admin.inc',
+    'weight' => -5,
+  );
+  $items['feed/%feed/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_delete_form', 1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+  );
+  $items['feed/%feed/edit'] = array(
+    'title' => 'Edit Feed',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_form', 1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+  );
+  $items['feed/%feed/categories'] = array(
+    'title' => 'Edit Feed Category Tags',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_term_form', 1),
+    'access arguments' => array('eosdis admin feed category'),
+    'file' => 'admin/feed.admin.inc',
+  );
+  
+  // Feed Emails
+  $items['feed/newsletter/%feed_newsletter/view'] = array(
+    'title' => 'View Feed Newsletter',
+    'page callback' => 'feed_newsletter_view',
+    'page arguments' => array(2),
+    'access arguments' => array('eosdis view feed'),
+  );
+  $items['feed/newsletter'] = array(
+    'title' => 'Newsletter',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_newsletter_form'),
+    'access arguments' => array('eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['feed/newsletter/add'] = array(
+    'title' => 'Add Feed Newsletter',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['feed/newsletter/%feed_newsletter'] = array(
+    'title' => 'Edit Feed Newsletter',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_newsletter_form', 2),
+    'access callback' => 'feed_newsletter_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+  );
+  $items['feed/newsletter/%feed_newsletter/edit'] = array(
+    'title' => 'Edit Feed Newsletter',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['feed/newsletter/%feed_newsletter/delete'] = array(
+    'title' => 'Delete Feed Newsletter',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_newsletter_delete_form', 2),
+    'access callback' => 'feed_newsletter_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+  );
+  
+  
+  $items['feed/newsletter/%feed_newsletter/subscriber'] = array(
+    'title' => 'Feed Newsletter Subscriber Overview',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_newsletter_subscriber_form', 2),
+    'access callback' => 'feed_newsletter_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+  );
+  $items['feed/newsletter/%feed_newsletter/subscriber/add'] = array(
+    'title' => 'Add Feed Newsletter Subscriber',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['feed/newsletter/%feed_newsletter/subscriber/%feed_newsletter_subscriber'] = array(
+    'title' => 'Edit Feed Newsletter Subscriber',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_newsletter_subscriber_form', 2, 4),
+    'access callback' => 'feed_newsletter_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+  );
+  $items['feed/newsletter/%feed_newsletter/subscriber/%feed_newsletter_subscriber/edit'] = array(
+    'title' => 'Edit Newsletter Subscriber',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['feed/newsletter/%feed_newsletter/subscriber/%feed_newsletter_subscriber/delete'] = array(
+    'title' => 'Delete Feed Newsletter Subscriber',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_newsletter_subscriber_delete_form', 2, 4),
+    'access callback' => 'feed_newsletter_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+  );
+  $items['feed/newsletter/%feed_newsletter/subscriber/%feed_newsletter_subscriber/run'] = array(
+    'title' => 'Email Feed Newsletter',
+    'description' => 'Emails a feed newsletter',
+    'page callback' => 'feed_run_newsletter_subscriber_page',
+    'page arguments' => array(2, 4),
+    'access callback' => 'feed_newsletter_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-newsletter.admin.inc',
+  );
+  
+  // Feed Widgets
+  $items['feed/%feed/widget'] = array(
+    'title' => 'Feed Widget Overview',
+    'page callback' => 'feed_widget_overview',
+    'page arguments' => array(1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-widget.admin.inc',
+  );
+  $items['feed/%feed/widget/add'] = array(
+    'title' => 'Feed Widget Add',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_widget_form', 1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-widget.admin.inc',
+  );
+  $items['feed/%feed/widget/%feed_widget'] = array(
+    'title' => 'Feed Widget Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_widget_form', 1, 3),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-widget.admin.inc',
+  );
+  $items['feed/%feed/widget/%feed_widget/edit'] = array(
+    'title' => 'Feed Widget Edit',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -15,
+  );
+  $items['feed/%feed/widget/%feed_widget/delete'] = array(
+    'title' => 'Feed Widget Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_widget_delete_form', 1, 3),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-widget.admin.inc',
+  );
+  
+  // Feed subscriptions
+  $items['feed/subscriptions/list'] = array(
+    'title' => 'My Subscriptions',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access arguments' => array('eosdis admin feed'),
+    'weight' => -10,
+  );
+  $items['feed/subscriptions/add'] = array(
+    'title' => 'Add New Subscription',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscription_form'),
+    'access arguments' => array('eosdis admin feed'),
+    'file' => 'admin/feed-subscription.admin.inc',
+  );
+  $items['feed/subscriptions/%feed'] = array(
+    'title' => 'View Subscriptions',
+    'description' => 'View feed.',
+    'page callback' => 'feed_view',
+    'page arguments' => array(2),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+  );
+  $items['feed/subscriptions/%feed/edit'] = array(
+    'title' => 'Edit Subscriptions',
+    'description' => 'Edit subscription.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscription_form', 2),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-subscription.admin.inc',
+  );
+  $items['feed/subscriptions/%feed/delete'] = array(
+    'title' => 'Delete Subscription',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscription_delete_form', 2),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-subscription.admin.inc',
+  );
+  $items['feed/subscriptions/%feed/feed-items'] = array(
+    'title' => 'Subscription Items',
+    'description' => 'Manage feed items.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_subscription_overview_form', 2),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed item'),
+    'file' => 'admin/feed-subscription.admin.inc',
+  );
+  $items['feed/subscriptions/%feed/feed-items/list'] = array(
+    'title' => 'View Subscribed Items',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed item'),
+    'weight' => -10,
+  );
+  $items['feed/subscriptions/%feed/feed-items/add'] = array(
+    'title' => 'Subscribe Items',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_subscription_form', 2),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed item'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-subscription.admin.inc',
+  );
+  
+  // Feed subscription filter
+  $items['feed/subscriptions/%feed/filter'] = array(
+    'title' => 'Subscription Filter Criteria',
+    'description' => 'Subscription filter criteria',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscription_filter_form', 2),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-subscription-filter.admin.inc',
+  );
+  $items['feed/subscriptions/%feed/filter/%feed_subscription_filter'] = array(
+    'title' => 'Subscription Filter Criteria',
+    'description' => 'Subscription filter criteria',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscription_filter_form', 2, 4),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-subscription-filter.admin.inc',
+  );
+  $items['feed/subscriptions/%feed/filter/%feed_subscription_filter/delete'] = array(
+    'title' => 'Delete subscription Filter Criteria',
+    'description' => 'Delete Subscription filter criteria',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_subscription_filter_delete_form', 2, 4),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-subscription-filter.admin.inc',
+  );
+  $items['feed/subscriptions/%feed/filter/%feed_subscription_filter/run'] = array(
+    'title' => 'Run Subscription Filter Criteria',
+    'description' => 'Run subscription filter criteria',
+    'page callback' => 'feed_run_subscriber_page',
+    'page arguments' => array(2, 4),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(2, 'eosdis admin feed'),
+    'file' => 'admin/feed-subscription-filter.admin.inc',
+  );
+  
+  // Feed fields
+  $items['feed/%feed/fields/%feed_field'] = array(
+    'title' => 'Edit Feed Field Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_field_settings_form', 1, 3),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+  );
+  $items['feed/%feed/fields/feed-items'] = array(
+    'title' => 'Manage Feed Item',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('manage_feed_item_form', 1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-item.admin.inc',
+  );
+  $items['feed/%feed/fields/feed-items/%feed_field'] = array(
+    'title' => 'Edit Feed Item Field Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_field_settings_form', 1, 4),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-item.admin.inc',
+  );
+  $items['feed/%feed/fields/values'] = array(
+    'title' => 'Edit Feed Values',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_widgets_form', 1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed.admin.inc',
+  );
+  
+  // Feed items
+  $items['feed/%feed/feed-items'] = array(
+    'title' => 'Feed Items',
+    'description' => 'Manage feed items.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_overview_form', 1),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed'),
+    'file' => 'admin/feed-item.admin.inc',
+  );
+  $items['feed/%feed/feed-items/list'] = array(
+    'title' => 'List Feed Items',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['feed/%feed/feed-items/add'] = array(
+    'title' => 'Add Feed Item',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_form', 1),
+    'access callback' => 'feed_admin_access',
+  	'access arguments' => array(1, 'eosdis admin feed item'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-item.admin.inc',
+  );
+  $items['feed/%feed/feed-items/%feed_item'] = array(
+    'title' => 'Edit Feed Item',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_form', 1, 3),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed item'),
+    'file' => 'admin/feed-item.admin.inc',
+  );
+  $items['feed/%feed/feed-items/%feed_item/edit'] = array(
+    'title' => 'Edit Feed Item',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['feed/%feed/feed-items/%feed_item/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_item_delete_form', 1, 3),
+    'access callback' => 'feed_admin_access',
+    'access arguments' => array(1, 'eosdis admin feed item'),
+    'file' => 'admin/feed-item.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+  $items['feed/categories/add'] = array(
+    'title' => 'Add Category',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_form'),
+  	'access arguments' => array('eosdis admin feed category'),
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  $items['feed/categories/%feed_category'] = array(
+    'title' => 'List Terms',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('manage_feed_category_term_form', 2),
+    'access callback' => 'feed_category_admin_access',
+    'access arguments' => array(TRUE, 2, 'eosdis admin feed category'),
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  $items['feed/categories/%feed_category/terms'] = array(
+    'title' => 'List Terms',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access callback' => 'feed_category_admin_access',
+    'access arguments' => array(TRUE, 2, 'eosdis admin feed category'),
+    'weight' => -10,
+  );
+  $items['feed/categories/%feed_category/edit'] = array(
+    'title' => 'Edit Category',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_form', 2),
+    'access callback' => 'feed_category_admin_access',
+    'access arguments' => array(FALSE, 2, 'eosdis admin feed category'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  $items['feed/categories/%feed_category/delete'] = array(
+    'title' => 'Delete Category',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_delete_form', 2),
+    'access callback' => 'feed_category_admin_access',
+    'access arguments' => array(FALSE, 2, 'eosdis admin feed category'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  $items['feed/categories/%feed_category/terms/add'] = array(
+    'title' => 'Add Term',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_term_form', 2),
+    'access callback' => 'feed_category_admin_access',
+    'access arguments' => array(TRUE, 2, 'eosdis admin feed category'),
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  $items['feed/categories/%feed_category/terms/%feed_category_term'] = array(
+    'title' => 'Edit Term',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_term_form', 2, 4),
+    'access callback' => 'feed_category_term_admin_access',
+    'access arguments' => array(4, 'eosdis admin feed category'),
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  $items['feed/categories/%feed_category/terms/%feed_category_term/edit'] = array(
+    'title' => 'Edit Term',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access callback' => 'feed_category_term_admin_access',
+    'access arguments' => array(4, 'eosdis admin feed category'),
+    'weight' => -10,
+  );
+  $items['feed/categories/%feed_category/terms/%feed_category_term/delete'] = array(
+    'title' => 'Delete Term',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_category_term_delete_form', 2, 4),
+    'access callback' => 'feed_category_term_admin_access',
+    'access arguments' => array(4, 'eosdis admin feed category'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-category.admin.inc',
+  );
+  
+  $items['feed/ajax/categories-autocomplete'] = array(
+    'page callback' => 'feed_category_term_autocomplete_ajax',
+    'access arguments' => array('eosdis admin feed category'),
+    'file' => 'ajax/feed-category.ajax.inc',
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['feed/source'] = array(
+    'title' => 'Manage Source Groups',
+    'description' => 'View feed user source groups.',
+    'page callback' => 'feed_group_overview',
+    'page arguments' => array(),
+    'access arguments' => array('eosdis admin feed group'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'admin/feed-group.admin.inc',
+    'weight' => 0,
+  );
+  $items['feed/source/add'] = array(
+    'title' => 'Add Feed User Source',
+    'description' => 'Add a new feed user sources.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_group_form'),
+    'access arguments' => array('eosdis admin feed group'),
+    'file' => 'admin/feed-group.admin.inc',
+  );
+  $items['feed/source/%feed_group'] = array(
+    'title' => 'Edit Feed User Source',
+    'description' => 'Edit feed user source.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_group_form', 2),
+    'access arguments' => array('eosdis admin feed group'),
+    'file' => 'admin/feed-group.admin.inc',
+  );
+  $items['feed/source/%feed_group/delete'] = array(
+    'title' => 'Delete Feed User Source',
+    'description' => 'Delete feed user source.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('feed_group_delete_form', 2),
+    'access arguments' => array('eosdis admin feed group'),
+    'file' => 'admin/feed-group.admin.inc',
+  );
+  
+  $items['feed/%feed/format/%'] = array(
+    'title' => 'View Feed',
+    'description' => 'View feed.',
+    'page callback' => 'feed_view',
+    'page arguments' => array(1, 3),
+    'access arguments' => array('eosdis view feed'),
+  );
+  $items['feed-item/%feed_item/format/%'] = array(
+    'title' => 'View Feed Item',
+    'description' => 'View feed.',
+    'page callback' => 'feed_item_view',
+    'page arguments' => array(1, 3),
+    'access arguments' => array('eosdis view feed'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_page_build().
+ */
+function feed_page_build(&$page) {
+  if (arg(0) == 'feed') {
+    if (is_array($page['content'])) {
+      array_unshift($page['content'], array(
+        '#theme' => 'link',
+        '#path' => drupal_get_path('module', 'feed') . '/Earthdata_FCT_UserGuide.docx',
+        '#text' => t('Federated Content Tool Help'),
+        '#options' => array(
+          'attributes' => array('class' => 'feed-help-link'),
+          'html' => FALSE,
+        ),
+      ));
+    }
+  }
+  return $page;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function feed_permission() {
+  return array(
+    'eosdis admin feed' => array(
+      'title' => t('EOSDIS administer feed'),
+    ),
+    'eosdis admin feed item' => array(
+      'title' => t('EOSDIS administer feed item'),
+    ),
+    'eosdis admin feed category' => array(
+      'title' => t('EOSDIS administer feed category'),
+    ),
+    'eosdis view feed' => array(
+      'title' => t('EOSDIS view feed'),
+    ),
+    'eosdis admin feed group' => array(
+      'title' => t('EOSDIS administer feed source'),
+    ),
+  );
+}
+
+/**
+ * Menu Callback; Formats and display the feed newsletter
+ */
+function feed_newsletter_view($feed_newsletter) {
+  $start = intval(arg(4));
+  $stop = intval(arg(5));
+
+  return feed_generate_newsletter($feed_newsletter, $start, $stop);
+}
+
+/**
+ * Menu Callback; Formats and display the feed
+ */
+function feed_view($feed, $type = NULL) {
+  if (!$type) {
+    $type = 'web';
+  }
+  $params = drupal_get_query_parameters();
+
+  $options = array();
+  $options['page'] = isset($params['page']) ? intval($params['page']) : 1;
+  $options['limit'] = isset($params['limit']) ? intval($params['limit']) : 20;
+  $options['random'] = isset($params['random']) ? filter_var($params['random'], FILTER_VALIDATE_BOOLEAN) : FALSE;
+  $options['sort'] = isset($params['sort']) ? strtolower($params['sort']) : NULL;
+  $options['order'] = isset($params['order']) ? $params['order'] : NULL;
+
+  if (($pos = strrpos($type, '.')) !== FALSE) {
+    $type = substr($type, 0, $pos);
+  }
+  return feed_format_feed($type, $feed, $options);
+}
+
+/**
+ * Menu Callback; Formats and display the feed
+ */
+function feed_item_view($feed_item, $type) {
+  $formatter = feed_formatter_info($type);
+  
+  if (isset($formatter['feed_item_viewable']) && empty($formatter['feed_item_viewable'])) {
+    return drupal_not_found();
+  }
+  return feed_format_feed_item($type, $feed_item);
+}
+
+/**
+ * Saves feeds built from an imported feed.
+ * 
+ * @param $objects
+ *   Contains feed related objects.
+ */
+function feed_build_save($objects) {
+  $feed = &$objects['feed'];
+  $feed_items = &$objects['feed_items'];
+  $feed_fields = &$objects['feed_fields'];
+  $feed_field_values = &$objects['feed_field_values'];
+  $feed_item_fields = &$objects['feed_item_fields'];
+  $feed_item_field_values = &$objects['feed_item_field_values'];
+
+  // Initialize database connection and begin a transaction
+  $connection = Database::getConnection();
+  $transaction = $connection->startTransaction();
+  
+  // Save feed first, taking great care in order of objects to save.
+  if (feed_save($feed, FEED_TYPE_IMPORTED, $transaction)) {
+    // Save feed fields and feed field values.
+    if (feed_fields_save($feed_fields, $feed, FALSE, $transaction)) {
+      foreach ($feed_field_values as $identifier => $feed_field_value) {
+        if ($connection->inTransaction() && isset($feed_fields[$identifier]->ffid)) {
+          feed_field_values_save($feed_field_value, $feed, $feed_fields[$identifier], $transaction);
+        }
+      }
+    }
+    
+    // Save feed item fields and feed item field values.
+    if (feed_fields_save($feed_item_fields, $feed, TRUE, $transaction)) {
+      foreach ($feed_items as $feed_item_index => $feed_item) {
+        if (feed_item_save($feed_item, $feed, $transaction)) {
+          if (!empty($feed_item_field_values[$feed_item_index])) {
+            foreach ($feed_item_field_values[$feed_item_index] as $identifier => $feed_item_field_value) {
+              if ($connection->inTransaction()) {
+                feed_item_field_values_save($feed_item_field_value, $feed_item, $feed_item_fields[$identifier], $transaction);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Helper function to valdiate a feed object property
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of property
+ * @param $property
+ *   Value of property to validate
+ */
+function feed_object_is_property($feed_object, $name, $property) {
+  return isset($feed_object->{$name}) && $feed_object->{$name} == $property;
+}
+
+/**
+ * Helper function to set a feed object property
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of property
+ * @param $property
+ *   Value of property
+ */
+function feed_object_set_property(&$feed_object, $name, $property) {
+  if (is_scalar($name)) {
+    $feed_object->{$name} = $property;
+  }
+}
+
+/**
+ * Helper function to get a feed object property
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of property
+ */
+function feed_object_get_property($feed_object, $name, $default = NULL) {
+  if (isset($feed_object->{$name})) {
+    return $feed_object->{$name};
+  }
+  return $default;
+}
+
+/**
+ * Helper function to valdiate a feed object data
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of property
+ * @param $data
+ *   Value of data to validate
+ */
+function feed_object_is_data($feed_object, $name, $data) {
+  return isset($feed_object->data[$name]) && $feed_object->data[$name] == $data;
+}
+
+/**
+ * Helper function to set a feed object data
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of data
+ * @param $data
+ *   Value of data
+ */
+function feed_object_set_data(&$feed_object, $name, $data) {
+  if (!is_array($feed_object->data)) {
+    $feed_object->data = array();
+  }
+  $feed_object->data[$name] = $data;
+}
+
+/**
+ * Helper function to get a feed object data
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of data
+ */
+function feed_object_get_data($feed_object, $name, $default = NULL) {
+  if (isset($feed_object->data[$name])) {
+    return $feed_object->data[$name];
+  }
+  return $default;
+}
+
+/**
+ * Helper function to set a feed object configuration
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of configuration
+ * @param $data
+ *   Value of configuration
+ */
+function feed_object_set_configuration(&$feed_object, $name, $configuration) {
+  if (!is_array($feed_object->configuration)) {
+    $feed_object->configuration = array();
+  }
+  $feed_object->configuration[$name] = $configuration;
+}
+
+/**
+ * Helper function to get a feed object configuration
+ * 
+ * @param $feed_object
+ *   A feed object.
+ * @param $name
+ *   Name of configuration
+ */
+function feed_object_get_configuration($feed_object, $name, $default = NULL) {
+  if (isset($feed_object->configuration[$name])) {
+    return $feed_object->configuration[$name];
+  }
+  return $default;
+}
+
+/**
+ * Returns an array of default feed field objects.
+ */
+function default_feed_fields() {
+  return array(
+    '_title' => feed_field_defaults(array(
+      'name' => 'title',
+      'tag' => 'title',
+      'type' => 'text',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -100,
+      	'is_editable' => FALSE,
+        'instance' => array('description' => t('The displayed title for the feed.')),
+      ),
+    )),
+    '_link' => feed_field_defaults(array(
+      'name' => 'link',
+      'tag' => 'link',
+      'type' => 'link',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -99,
+      	'is_editable' => FALSE,
+        'instance' => array(
+        	'title' => t('URL'), 
+        	'description' => t('Enter home page of the feed. (e.g. http://sitename.com)'),
+        ),
+      ),
+    )),
+    '_description' => feed_field_defaults(array(
+      'name' => 'description',
+      'tag' => 'description',
+      'type' => 'html',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -98,
+      	'is_editable' => FALSE,
+        'instance' => array(),
+      ),
+    )),
+    '_image' => feed_field_defaults(array(
+      'name' => 'logo',
+      'tag' => 'image',
+      'type' => 'image',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -97,
+      	'is_editable' => FALSE,
+      ),
+    )),
+  );
+}
+
+/**
+ * Returns an array of default feed field objects.
+ * 
+ * @param $is_feed_item_field
+ *   Boolean that indicates whether feed fields will be for a feed item.
+ */
+function default_feed_item_fields() {
+  return array(
+    '_title' => feed_field_defaults(array(
+      'name' => 'title',
+      'tag' => 'title',
+      'type' => 'text',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -100,
+      	'is_editable' => FALSE,
+        'instance' => array('description' => t('The displayed title for the feed item.')),
+      ),
+    )),
+    '_link' => feed_field_defaults(array(
+      'name' => 'link',
+      'tag' => 'link',
+      'type' => 'link',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -99,
+      	'is_editable' => FALSE,
+        'instance' => array('description' => t('Enter home page of the feed. (e.g. http://sitename.com)')),
+      ),
+    )),
+    '_description' => feed_field_defaults(array(
+      'name' => 'description',
+      'tag' => 'description',
+      'type' => 'html',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -98,
+      	'is_editable' => FALSE,
+        'instance' => array(),
+      ),
+    )),
+    '_pubdate' => feed_field_defaults(array(
+      'name' => 'publish',
+      'tag' => 'pubDate',
+      'type' => 'date',
+      'is_required' => TRUE,
+      'data' => array(
+        'weight' => -97,
+      	'is_editable' => FALSE,
+        'instance' => array(),
+      ),
+    )),
+  );
+}
+
+/**
+ * Process feed category term autocomplete to create each item.
+ */
+function form_process_feed_category_term_autocomplete($element, &$form_state) {
+  $feed_category_options = feed_category_options();
+  
+  if (empty($feed_category_options)) {
+    $output = '<div class="feed-category-autocomplete-disabled">';
+    if (!empty($element['#title'])) {
+      $output .= '<label>' . $element['#title'] . '</label>';
+    }
+    $output .= '<div class="feed-category-autocomplete-disabled-text">';
+    $output .= t('No feed categories to select tags, !link a feed category first', array(
+      '!link' => l('create', 'feed/categories/add', array('attributes' => array('target' => '_blank'))),
+    ));
+    $output .= '</div></div>';
+    
+    return array(
+      '#type' => 'markup',
+      '#markup' => $output,
+    );
+  }
+  $id = uniqid('feed-autocomplete-');
+  drupal_add_library('system', 'drupal.autocomplete');
+  
+  $item_name = '';
+  if (is_array($element['#parents'])) {
+    $parents = $element['#parents'];
+    $item_name .= array_shift($parents);
+    $item_name .= '[' . implode('][', $parents) . '][feed_category_terms]';
+  }
+  
+  $element['#id'] = $id;
+  $element['#tree'] = TRUE;
+  $element['#element_validate'] = array('feed_category_term_autocomplete_validate');
+  $element['#attached']['js'] = array(
+    drupal_get_path('module', 'feed') . '/js/feed.autocomplete.js',
+    array(
+      'type' => 'setting', 
+      'data' => array(
+        $id => array(
+          'uri' => '/feed/ajax/categories-autocomplete',
+          'remove_text' => !empty($element['#remove_text']) ? $element['#remove_text'] : '',
+          'item_name' => $item_name,
+        ),
+      ),
+    ),
+  );
+  
+  $form_state[$element['#id']]['terms'] = feed_category_term_autocomplete_retrieve($element, $errors);
+  $form_state[$element['#id']]['errors'] = $errors;
+  
+  $element['feed_category_terms'] = array(
+    '#tree' => TRUE, 
+    '#type' => 'container',
+    '#attributes' => array('class' => array('feed-category-term-autocomplete-term-container')),
+  );
+  
+  foreach ($form_state[$element['#id']]['terms'] as $feed_category_term) {
+    if (isset($feed_category_term->name) && isset($feed_category_term->fcid)) {
+      if ($feed_category = feed_category_load($feed_category_term->fcid)) {
+        $element['feed_category_terms'][] = array(
+          '#type' => 'feed_category_term_autocomplete_item',
+          '#value' => !empty($feed_category_term->fctid) ? $feed_category_term->fctid : ($feed_category_term->fcid . ':' . $feed_category_term->name),
+          '#term' => $feed_category_term->name,
+          '#category' => $feed_category->name,
+          '#remove_text' => $element['#remove_text'],
+        );
+      }
+    }
+  }
+  $element['feed_category_term_textfield'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search Term'),
+    '#size' => !empty($element['#size']) ? $element['#size'] : 30,
+    '#attributes' => array('class' => array('feed-category-term-autocomplete-input')),
+  );
+  $element['feed_category_term_add'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'style' => 'display: none;',
+      'class' => array('feed-category-term-add')
+    ),
+  );
+  
+  $element['feed_category_term_add']['feed_category_term_category'] = array(
+    '#type' => 'select',
+    '#title' => t('Category'),
+    '#options' => $feed_category_options,
+    '#attributes' => array(
+      'class' => array('feed-category-term-autocomplete-category')
+    ),
+    '#field_suffix' => '<input type="button" value="Add" class="button feed-category-term-autocomplete-add" />',
+  );
+  return $element;
+}
+
+/**
+ * Retrieve feed category term from a feed_category_term_autocomplete element.
+ */
+function feed_category_term_autocomplete_retrieve($element, &$errors = array()) {
+  global $user;
+  if (!is_array($errors)) {
+    $errors = array();
+  }
+  
+  $feed_category_terms = array();
+  if (!empty($element['#value']['feed_category_terms']) && is_array($values = $element['#value']['feed_category_terms'])) {
+    foreach ($values as $key) {
+      if (is_object($key) && isset($key->name, $key->fctid)) {
+        $feed_category_terms[$key->fctid] = feed_category_term_defaults($key);
+      }
+      elseif (is_numeric($key) && ($feed_category_term = feed_category_term_load($key))) {
+        $feed_category_terms[$key] = $feed_category_term;
+      }
+      elseif (strpos($key, ':') !== FALSE) {
+        list($fcid, $term) = explode(':', $key, 2);
+      
+        if (!$feed_category = feed_category_load($fcid)) {
+          $errors[] = t('Invalid feed category selected for %term', array('%term' => $term));
+          continue;
+        }
+        
+        if (!feed_category_access(TRUE, $feed_category)) {
+          $errors[] = t('Access error for category %category', array('%category' => $feed_category->name));
+          continue;
+        }
+        
+        if (!$feed_category_term = feed_category_term_load_term($term, $feed_category)) {
+          $feed_category_term = feed_category_term_defaults();
+          $feed_category_term->name = $term;
+          $feed_category_term->uid = $user->uid;
+          $feed_category_term->fcid = $feed_category->fcid;
+          
+          $feed_category_terms[$key] = $feed_category_term;
+        }
+      }
+    }
+  }
+  return $feed_category_terms;
+}
+
+/**
+ * Validates feed category term autocomplete.
+ */
+function feed_category_term_autocomplete_validate(&$element, &$form_state) {
+  if (!empty($form_state[$element['#id']]['error'])) {
+    foreach ($form_state[$element['#id']]['error'] as $error) {
+      form_error($element, $error);
+    }
+  }
+}
+
+/**
+ * Trims a string to a given length but not on word.
+ * 
+ * @param $string
+ *   A string to trim to a certain length
+ * @param $length
+ *   A positive integer length
+ * @param $ellipsis
+ *   Append to string if string is truncated
+ */
+function feed_trim($string, $length, $ellipsis = '...') {
+  if (strlen($string) > $length) {
+    $string = substr($string, 0, $length + 1);
+    return preg_replace('/\s+?(\S+)?$/', '', $string) . $ellipsis;
+  }
+  else {
+    return $string;
+  }
+}
+
+/**
+ * Returns the group this feed belongs in
+ * 
+ * @param $feed
+ */
+function feed_in_group($feed) {
+  if (isset($feed->uid)) {
+    feed_group_users_load($feed_group);
+  }
+}
+
+/**
+ * Form process elements for feed date element;
+ */
+function form_process_feed_date(&$element, &$form_state) {
+  drupal_add_library('system', 'ui.datepicker');
+  drupal_add_js(drupal_get_path('module', 'feed') . '/js/feed.date.js', 'file');
+  
+  if (!empty($element['#value']['timestamp'])) {
+    $datetime = new DateTime();
+    $datetime->setTimestamp($element['#value']['timestamp']);
+    
+    if (!empty($element['#value']['timezone'])) {
+      $datetime->setTimezone(new DateTimeZone($element['#value']['timezone']));
+    }
+  }
+
+  $timezones = array(
+    'UTC' => 'Universal Time',
+    'EST' => 'US Eastern',
+    'CST' => 'US Central',
+    'MST' => 'US Mountain',
+    'PST' => 'US Pacific',
+    'custom' => 'Local Time Differential',
+  );
+  
+  if (!empty($element['#value']['timezone']) && !in_array($element['#value']['timezone'], $timezones) && preg_match('/gmt(-\d+)/i', $element['#value']['timezone'], $match)) {
+    $differential = $match[1];
+    $timezone = 'custom';
+  }
+  $element['#tree'] = TRUE;
+  $element['date'] = array('#type' => 'feed_fieldset');
+  $element['date']['date'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date'),
+    '#description' => t('Enter or select the desired date, formatted in (mm/dd/yyyy).'),
+    '#default_value' => !empty($datetime) ? date_format($datetime, 'm/j/Y') : '',
+    '#attributes' => array(
+      'class' => array('feed-date-widget-date'),
+    )
+  );
+  $element['date']['time'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Time'),
+    '#description' => t('Enter the desired time, formatted in (hh:mm AM/PM, hh:mm:ss AM/PM).'),
+    '#default_value' => !empty($datetime) ? date_format($datetime, 'h:i:s A') : '',
+    '#element_validators' => array(),
+    '#attributes' => array(
+      'class' => array('feed-date-widget-time'),
+    )
+  );
+  $element['date']['zone'] = array(
+  	'#type' => 'select',
+    '#title' => t('Timezone'),
+    '#options' => $timezones,
+    '#default_value' => !empty($timezone) ? $timezone : 'UTC',
+    '#description' => t('Select the desired timezone.'),
+    '#attributes' => array('class' => array('feed-date-widget-timezone')),
+  );
+  $element['date']['differential'] = array(
+  	'#type' => 'textfield',
+    '#title' => t('Local Time Differential'),
+    '#description' => t('Enter the local GMT differential in hours.'),
+    '#default_value' => !empty($differential) ? $differential : '',
+    '#states' => array(
+      'visible' => array('.feed-date-widget-timezone' => array('value' => 'custom')),
+    ),
+  );
+  return $element;
+}
+
+/**
+ * Form validate feed date element.
+ */
+function form_validate_feed_date(&$element, &$form_state) {
+  $value = $element['#value'];
+  
+  if (empty($value['date']['date']) || !preg_match('/(\d{1,2})\/(\d{1,2})\/(\d{4})/', $value['date']['date'], $date) || !checkdate($date[1], $date[2], $date[3])) {
+    form_error($element['date']['date'], t('The date could not be determined, please check date is valid.'));
+  }
+  else {
+    $datestring = sprintf('%02d/%02d/%04d', $date[1], $date[2], $date[3]);
+  }
+  
+  if (empty($value['date']['time']) || !preg_match('/(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(am|pm|a|p)?/i', $value['date']['time'], $time)) {
+    form_error($element['date']['time'], t('The time could not be determined, please check time is valid.'));
+  }
+  else {
+    if ((!empty($time[4]) && intval($time[1], 10) > 12) || (empty($time[4]) && intval($time[1], 10) > 24)) {
+      form_error($element['date']['time'], t('Please enter a valid hour mark.'));
+    }
+    if (intval($time[2], 10) > 60) {
+      form_error($element['date']['time'], t('Please enter a valid minute mark.'));
+    }
+    if (!empty($time[3]) && intval($time[3], 10) > 60) {
+      form_error($element['date']['time'], t('Please enter a valid second mark.'));
+    }
+    
+    if (isset($time[1], $time[2])) {
+      if (!empty($time[4])) {
+        if ($time[4] == 'a') {
+          $time[4] = 'am';
+        }
+        elseif ($time[4] == 'p') {
+          $time[4] = 'pm';
+        }
+      }
+      $timestring = sprintf('%02d:%02d:%02d%s', $time[1], $time[2], !empty($time[3]) ? $time[3] : '00', !empty($time[4]) ? $time[4] : '');
+    }
+  }
+  
+  if ($value['date']['zone'] == 'custom') {
+    if (empty($value['date']['differential'])) {
+      form_error($element['date']['differential'], t('Please enter the local time differential.'));
+    }
+    elseif (!preg_match('/(-|+)?\s*(\d+)/', $value['date']['differential'], $differential)) {
+      form_error($element['date']['differential'], t('The local time differential must be in -/+ 0-12.'));
+    }
+    else {
+      $timezone = 'gmt' . $differential[1] . intval($differential[2]);
+    }
+  }
+  elseif (!in_array($value['date']['zone'], array('UTC', 'EST', 'CST', 'MST', 'PST'))) {
+    form_error($element['date']['zone'], t('Please select a valid timezone.'));
+  }
+  else {
+    $timezone = $value['date']['zone'];
+  }
+  
+  if (!empty($datestring) && !empty($timestring) && !empty($timezone)) {
+    $date = date_create(sprintf('%s %s', $datestring, $timestring), new DateTimeZone($timezone));
+    $errors = date_get_last_errors($date);
+    
+    if ($errors['warning_count'] > 0) {
+      foreach ($errors['warnings'] as $warning) {
+        watchdog('feed', 'Feed date warning: %warning', array('%warning' => $warning), WATCHDOG_WARNING);
+      }
+    }
+    
+    if ($errors['error_count'] > 0) {
+      form_error($element, t('Date could not be parsed.'));
+      foreach ($errors['errors'] as $error) {
+        watchdog('feed', 'Feed date error: %error', array('%error' => $error), WATCHDOG_ERROR);
+      }
+    }
+    else {
+      $element['#value']['date']['timestamp'] = date_timestamp_get($date);
+      $element['#value']['date']['timezone'] = $timezone;
+      
+      form_set_value($element, $element['#value']['date'], $form_state);
+    }
+  }
+}
+
+/**
+ * Form Process Feed Item Criteria
+ */
+function form_process_feed_item_criteria(&$element, &$form_state) {
+  $config = !empty($element['#configuration']) ? $element['#configuration'] : array();
+
+  $feed_options = array();
+  foreach (feed_load_all(array(FEED_TYPE_CREATED, FEED_TYPE_IMPORTED)) as $feed) {
+    $feed_options[$feed->fid] = feed_field_values_tagname_format($feed->fid, 'title', 'text');
+  }
+  
+  if (empty($element['#feed_item_fields'])) {
+    $element['#feed_item_fields'] = array('title', 'link', 'description');
+  }
+  
+  $element['#type'] = 'feed_fieldset';
+  
+  if (!empty($feed_options)) {
+    $element['feed'] = array(
+      '#type' => 'feed_fieldset',
+      '#title' => t('Subscribe by Feed'),
+    );
+    $element['feed']['option'] = array(
+      '#type' => 'radios',
+      '#title' => t('Feed Criteria'),
+      '#description' => 
+        t('Options Available:') . '<br />' .
+        '&nbsp;&nbsp;' . t('Filter certain items from all available feeds') . '<br />' . 
+        '&nbsp;&nbsp;' . t('Filter certain items from feeds you select, or') . '<br />' . 
+        '&nbsp;&nbsp;' . t('Auto-subscribe all items from select feeds'),
+      '#attributes' => array('class' => array('feed-subscription-filter-feed-option')),
+      '#default_value' => !empty($config['feed']['option']) ? $config['feed']['option'] : 'criteria-all',
+      '#options' => array(
+        'criteria-all' => t('Filter from all feeds'),
+        'criteria-select' => t('Filter from select feeds'),
+        'subscribe-select' => t('Auto-subscribe from select feeds'),
+      ),
+    );
+    $element['feed']['select'] = array(
+      '#type' => 'select',
+      '#title' => t('Feed'),
+      '#description' => t('Select feeds to apply filter.'),
+      '#attributes' => array('class' => array('feed-subscription-filter-feed-select')),
+      '#default_value' => !empty($config['feed']['select']) ? $config['feed']['select'] : array(),
+      '#multiple' => TRUE,
+      '#options' => $feed_options,
+      '#states' => array(
+        'visible' => array(
+          '.feed-subscription-filter-feed-option' => array(
+            array('value' => 'criteria-select'),
+            array('value' => 'subscribe-select'),
+          ),
+        ),
+      ),
+    );
+  }
+  
+  $element['feed_item'] = array('#type' => 'container');
+  $element['feed_item']['fields'] = array(
+    '#type' => 'feed_fieldset',
+    '#title' => t('Subscribe by Keywords'),
+    '#attributes' => array(
+      'class' => array('feed-fieldset-collapsible', 'feed-fieldset-collapsible-collapsed'),
+    ),
+    '#tree' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        '.feed-subscription-filter-feed-option' => array(
+          array('value' => 'criteria-all'),
+          array('value' => 'criteria-select'),
+        ),
+      ),
+    ),
+  );
+
+  foreach ($element['#feed_item_fields'] as $tagname) {
+    $element['feed_item']['fields'][$tagname] = array(
+      '#type' => 'textfield',
+      '#title' => t(':field keywords', array(':field' => ucwords($tagname))),
+      '#description' => t('Enter keywords criteria for the :field field', array(':field' => $tagname)),
+      '#default_value' => !empty($config['feed_item']['fields'][$tagname]) ? $config['feed_item']['fields'][$tagname] : '',
+    );
+  }
+  
+  $element['feed_item']['terms'] = array(
+    '#type' => 'feed_fieldset',
+    '#title' => t('Subscribe by Tags'),
+    '#attributes' => array(
+      'class' => array('feed-fieldse', 'feed-fieldset-collapsible', 'feed-fieldset-collapsible-collapsed'),
+    ),
+    '#tree' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        '.feed-subscription-filter-feed-option' => array(
+          array('value' => 'criteria-all'),
+          array('value' => 'criteria-select'),
+        ),
+      ),
+    ),
+  );
+  foreach (feed_category_load_all() as $feed_category) {
+    $element['feed_item']['terms'][$feed_category->fcid] = array(
+      '#type' => 'checkboxes',
+      '#title' => '<a href="#" class="feed-category-toggle"></a>' . $feed_category->name,
+      '#options' => feed_category_term_options($feed_category),
+      '#default_value' => !empty($config['feed_item']['terms'][$feed_category->fcid]) ? array_fill_keys($config['feed_item']['terms'][$feed_category->fcid], TRUE) : array(),
+    );
+  }
+  
+  $feed_group_options = array();
+  foreach (feed_group_load_all() as $feed_group) {
+    $feed_group_options[$feed_group->fgid] = $feed_group->name;
+  }
+  
+  $element['source'] = array(
+    '#type' => 'feed_fieldset',
+    '#title' => t('Subscribe by Sources'),
+    '#attributes' => array(
+      'class' => array('feed-fieldset-collapsible', 'feed-fieldset-collapsible-collapsed'),
+    ),
+    '#states' => array(
+      'visible' => array(
+        '.feed-subscription-filter-feed-option' => array(
+          array('value' => 'criteria-all'),
+          array('value' => 'criteria-select'),
+        ),
+      ),
+    ),
+  );
+  $element['source']['group'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Content Source'),
+    '#options' => $feed_group_options,
+    '#default_value' => !empty($config['feed']['group']) ? array_fill_keys($config['feed']['group'], TRUE) : array(),
+  );
+  
+  return $element;
+}
+
+/**
+ * Form Validate Feed Item Criteria;
+ */
+function form_validate_feed_item_criteria(&$element, &$form_state) {
+  $values = $element['#value'];
+
+  $configuration = array(
+    'feed' => array(),
+    'feed_item' => array(),
+  );
+  $configuration['feed']['select'] = !empty($values['feed']['option']) ? $values['feed']['option'] : NULL;
+  $configuration['feed']['selected'] = !empty($values['feed']['select']) ? $values['feed']['select'] : NULL;
+  $configuration['feed']['group'] = !empty($values['source']['group']) ? array_keys(array_filter($values['source']['group'])) : array();
+  
+  $filtered_terms = array();
+  if (!empty($values['feed_item']['terms'])) {
+    foreach ($values['feed_item']['terms'] as $fcid => $terms) {
+      $filtered_terms[$fcid] = array_keys(array_filter($terms));
+    }
+  }
+  $configuration['feed_item']['terms'] = $filtered_terms;
+  $configuration['feed_item']['fields'] = !empty($values['feed_item']['fields']) ? $values['feed_item']['fields'] : array();
+  
+  $element['#configuration'] = array_merge($element['#configuration'], $configuration);
+}

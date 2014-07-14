@@ -1,0 +1,820 @@
+#feed-overview,
+#feed-category-overview,
+#feed-subscription-overview,
+#feed-group-overview-form {
+	margin-left: 10px;
+}
+#feed-subscription-overview,
+#feed-overview,
+#feed-import-form,
+#manage-feed-item-form {
+  margin-top: 10px;
+}
+.feed-warning {
+  font-weight: bold;
+}
+ul.feed-links {
+  list-style: none;
+  margin-top: 10px !important;
+}
+ul.feed-links li {
+  display: inline;
+  list-style: none;
+  background-image: none !important;
+  padding-left: 0px !important;
+}
+
+.feed-help-link {
+	float: right;
+	margin-top: -45px;
+	font-weight: bold;
+}
+
+.feed-form {
+	margin-left: 10px;
+  margin-top: 10px;
+	width: 926px;
+}
+.feed-form > div > div.form-item > input.form-text {
+	width: 80% !important;
+	font-size: 14px !important;
+}
+.feed-form .filter-wrapper {
+	border: none;
+	padding: 0px;
+}
+.feed-form div.form-textarea-wrapper {
+  margin-top: 3px;
+}
+.feed-form .tabledrag-toggle-weight-wrapper {
+  float: right;
+  margin-top: -21px;
+  margin-right: 15px;
+}
+.feed-form .messages {
+	border: medium none;
+	display: block;
+	margin: 0;
+	padding: 3px 15px;
+}
+.feed-form .feed-submit {
+	margin-top: 10px;
+}
+
+.feed-block {
+	padding: 10px;
+	border: 1px solid #b1b1b1;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  -o-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+.feed-block .feed-block-title {
+	background-color: #ead78f;
+	padding: 0 15px;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 2em;
+	color: #826700;
+  border-bottom: 1px solid #fff;
+}
+
+/**
+ * FEED BLOCK STYLES
+ **/
+.feed-block .feed-block-content table {
+	width: 100%;
+}
+.feed-block .feed-block-content table thead th {
+	background-color: #d7ecff;
+  font-weight: bold;
+	color: #2e60b1;
+}
+.feed-block .feed-block-content table tbody,
+.feed-block .feed-block-content table tr,
+.feed-block .feed-block-content table th,
+.feed-block .feed-block-content table td {
+	border: none;
+}
+.feed-block .feed-block-content table tr {
+	border-bottom: 1px solid #d7ecff;
+}
+.feed-block .feed-block-content table th, 
+.feed-block .feed-block-content table td {
+	padding: 3px 15px;
+  line-height: 1.5em;
+}
+
+
+/**
+ * FEED FIELDSET STYLES
+ **/
+.feed-fieldset {
+  background-color: #e7f4ff;
+  border: 1px solid #c9d4de;
+  padding: 10px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  -o-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+.feed-fieldset .feed-fieldset-description {
+  font-size: 0.8em;
+  margin: 0 15px;
+  font-style: italic;
+  color: #777;
+}
+.feed-fieldset .feed-fieldset-legend-wrapper {
+  background-color: #ead78f;
+  color: #826700;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 2em;
+  margin-bottom: 10px;
+  width: 100%;
+}
+.feed-fieldset .feed-fieldset-legend-wrapper span {
+  padding: 0 15px;
+}
+.feed-fieldset .feed-fieldset-wrapper .form-item {
+  padding: 0 0 5px 0;
+  margin: 0 15px;
+}
+.feed-fieldset .feed-fieldset {
+  background: #d7ecff;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  -o-box-shadow: none;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+}
+.feed-fieldset .feed-fieldset .feed-fieldset-legend-wrapper,
+.feed-fieldset .feed-fieldset .fieldset-wrapper {
+  float: none;
+}
+.feed-fieldset .feed-fieldset .feed-fieldset-legend-wrapper {
+  background-color: #b6cde4;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 2em;
+  margin-bottom: 0px;
+}
+
+
+/**
+ * FEED FIELDSET COLLAPSIBLE STYLES
+ **/
+.feed-fieldset-collapsible .feed-fieldset-legend-wrapper {
+  cursor: pointer;
+  border-bottom: 1px solid #d7ecff;
+}
+.feed-fieldset-collapsible-collapsed .feed-fieldset-wrapper {
+  display: none;
+}
+
+
+/**
+ * CREATE/EDIT FEED FORM
+ **/
+#feed-form .feed-create-container {
+  background-color: #fff;
+}
+#feed-form .feed-create-container,
+#feed-form .feed-field-widget {
+  margin-top: 10px;
+}
+#feed-form .feed-category-empty {
+  padding: 10px;
+}
+.feed-field-setting-link {
+  float: right;
+  font-weight: normal;
+  margin: 9px 10px 0 0;
+  font-size: 12px;
+}
+.feed-form table div.form-item input.form-text {
+  width: 80% !important;
+  font-size: 14px !important;
+}
+.feed-form table a.tabledrag-handle {
+	float: left;
+	margin: 0 0 0 -20px;
+  padding: 5px 0 5px 5px;
+}
+.feed-form table a.tabledrag-handle:hover {
+	text-decoration: none !important;
+}
+.feed-form table .form-item-feed-field-add-field-name {
+	float: left;
+}
+.feed-form table .form-item .description {
+  margin-top: 0;
+}
+.feed-form .description {
+  color: #777777;
+  font-size: 0.8em;
+  font-style: italic;
+  line-height: 1.2em;
+  margin-top: 5px;
+}
+
+.feed-form .feed-category-list {
+  margin-top: 10px;
+	float: left;
+	width: 250px;
+	margin-right: 10px;
+}
+.feed-form .feed-category-list .form-type-checkboxes {
+	padding: 0 !important;
+}
+.feed-form .feed-category-list .form-type-checkboxes > label {
+  padding-left: 15px;
+  padding-right: 15px;
+	color: #2e60b1;
+	border-bottom: 1px solid #fff;
+	background: #d7ecff;
+	line-height: 2em
+}
+.feed-form .feed-category-list .feed-category-item .form-item {
+	background-color: #f0f9fe;
+  padding: 0 0 0 30px !important;
+  border-bottom: 1px solid #fff;
+  line-height: 2em;
+}
+
+
+/**
+ * FEED ITEM FILTER ELEMENTS
+ **/
+#feed-item-filter {
+  float: left;
+  width: 250px;
+  margin-right: 10px;
+}
+#feed-item-filter .feed-fieldset-legend-wrapper {
+	margin-bottom: 0;
+}
+#feed-item-filter .feed-item-filter-attributes .form-item input.form-text {
+  width: 205px;
+}
+#feed-item-filter .feed-category-list {
+  margin: 0 0 10px 0;
+}
+#feed-item-filter .form-submit {
+	margin-top: 5px;
+}
+#feed-item-filter .feed-filter-category .form-type-checkboxes > label {
+  cursor: pointer;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+#feed-item-filter span.feed-category-toggle {
+  float: left;
+  width: 10px;
+  margin-top: 1px;
+  margin-right: 5px;
+}
+#feed-item-filter .feed-filter-category-terms .form-type-checkbox {
+}
+
+/**
+ * FEED ITEM SELECT ELEMENTS
+ **/
+.feed-item-select-page {
+	margin-right: 10px;
+}
+#feed-item-select td, #feed-item-select th {
+	padding: 3px 5px;
+}
+#feed-item-select .feed-item-select-description {
+  width: 250px;
+  overflow: hidden;
+}
+#feed-item-select .feed-item-select-title {
+	display: block;
+  width: 95px;
+  overflow: hidden;
+}
+#feed-item-select td.feed-col-1, #feed-item-select th.feed-col-1 {
+  padding: 3px 10px;
+}
+
+
+/**
+ * FEED SUBSCRIBE FORM
+ **/
+#feed-subscribe-form #feed-item-select td, #feed-subscribe-form #feed-item-select th {
+  padding: 3px 10px !important;
+}
+#feed-subscribe-form #feed-item-select .feed-item-select-description {
+  width: auto !important;
+}
+#feed-subscribe-form #feed-item-select .feed-item-select-title {
+  width: auto !important;
+}
+#feed-subscribe-form #feed-item-select .unpublished {
+  color: #999;
+}
+
+
+/**
+ * CREATE/EDIT SUBSCRIPTION FEED FORM
+ **/
+#feed-subscription-form .feed-create-container {
+	background-color: #fff;
+}
+#feed-subscription-form .feed-create-container,
+#feed-subscription-form .feed-field-widget {
+  margin-top: 10px;
+}
+#feed-subscription-form .feed-category-empty {
+	padding: 10px;
+}
+#feed-subscribe-form .feed-create-container,
+#feed-subscribe-form .feed-field-widget {
+  margin-top: 10px;
+}
+
+
+/**
+ * FEED SUBSCRIPTION OVERVIEW PAGE
+ **/
+#feed-subscription-overview table thead .feed-col-2 {
+  border-right: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+}
+#feed-subscription-overview table tbody .feed-col-2 {
+  border-left: 1px solid #ccc;
+}
+#feed-subscription-overview table tbody .feed-col-5 {
+  border-right: 1px solid #ccc;
+}
+.feed-add-subscription {
+  margin-top: 5px;
+  margin-left: 10px;
+}
+
+
+/**
+ * FEED ITEM SUBSCRIPTION FORM
+ **/
+#feed-item-subscription-form .feed-subscription-submit {
+  float: right;
+  clear: both;
+}
+#feed-item-subscription-form #feed-item-select .unpublished {
+  color: #999;
+}
+#feed-item-subscription-form #feed-item-select .feed-item-select-description {
+  width: 280px;
+}
+#feed-item-subscription-form #feed-item-select .feed-item-select-title {
+  width: 110px;
+}
+#feed-item-subscription-form .feed-item-select-container {
+  width: 622px;
+  float: right;
+}
+
+
+/**
+ * FEED ITEM SUBSCRIPTION OVERVIEW FORM
+ **/
+#feed-item-subscription-overview-form .feed-item-select-container {
+	float: none;
+	width: auto;
+}
+#feed-item-subscription-overview-form .feed-item-select-title {
+	width: 160px;
+}
+#feed-item-subscription-overview-form .feed-item-select-description {
+  width: 420px;
+}
+#feed-item-subscription-overview-form #feed-item-select .unpublished {
+	color: #ccc;
+}
+
+
+/**
+ * FEED SUBSCRIPTION FILTER FORM
+ **/
+#feed-subscription-filter-form #edit-filter {
+	float: left;
+	width: 250px;
+}
+#feed-subscription-filter-form .feed-subscription-filter-list {
+  float: right;
+  width: 650px;
+}
+#feed-subscription-filter-form input.form-text {
+  width: 205px;
+}
+#feed-subscription-filter-form .form-item-name {
+	margin-right: 0;
+	margin-left: 0;
+}
+#feed-subscription-filter-form .form-item-name input.form-text {
+	width: 235px;
+}
+.feed-subscription-filter-feed-option .form-item {
+	margin-left: 0 !important;
+}
+#feed-subscription-filter-form .form-item-name label {
+	background: #EAD78F;
+	color: #826700;
+	font-size: 14px;
+  font-weight: bold;
+	line-height: 2em;
+  padding: 0 15px;
+  margin-bottom: 5px;
+}
+#feed-subscription-filter-form #edit-title {
+	font-size: 13px;
+}
+.feed-subscription-filter-feed-select {
+	width: 100%;
+	height: 70px;
+}
+.feed-subscription-filter-add {
+  margin-top: 10px;
+}
+
+
+/**
+ * FEED OVERVIEW PAGE
+ **/
+#feed-overview table thead .feed-col-2,
+#feed-overview table thead .feed-col-3 {
+  border-left: 1px solid #ccc;
+}
+#feed-overview table tbody .feed-col-2 {
+  border-left: 1px solid #ccc;
+}
+#feed-overview table tbody .feed-col-6 {
+  border-left: 1px solid #ccc;
+}
+
+
+/**
+ * FEED ALL OVERVIEW PAGE
+ **/
+#feed-all-overview table thead .feed-col-4,
+#feed-all-overview table tbody .feed-col-4 {
+  border-left: 1px solid #ccc;
+}
+
+
+/**
+ * CREATE/EDIT FEED FIELD FORM
+ **/
+#feed-field-settings-form .form-type-checkbox .form-checkbox {
+  margin-bottom: 3px;
+}
+#feed-field-settings-form .form-type-checkbox .description {
+  margin-left: 1.6em;
+}
+#feed-field-settings-form #edit-formatters {
+	margin-bottom: 10px;
+}
+#feed-field-settings-form #edit-formatters .feed-fieldset {
+	margin: 0.5em 2.5em
+}
+
+
+/**
+ * CREATE/EDIT FEED ITEM FORM
+ **/
+#feed-item-form .feed-item-add-submit {
+	float: right;
+}
+#feed-item-form .feed-item-fieldset {
+	margin-bottom: 10px;
+}
+#feed-item-form .feed-item-field-widget-container {
+	margin: 0;
+	padding: 5px 15px;
+	background: none !important;
+}
+#feed-item-form .feed-item-field-widget-container > .feed-fieldset-legend-wrapper {
+	background: none !important;
+}
+#feed-item-form .feed-item-field-widget-container > .feed-fieldset-legend-wrapper span {
+	padding: 0 !important;
+}
+#feed-item-form .feed-item-field-widget-container .feed-fieldset-legend {
+	font-weight: bold;
+	color: #000;
+}
+#feed-item-form .feed-item-field-widget-container .feed-fieldset {
+	border: 1px solid #c0c0c0;
+}
+
+
+/**
+ * FEED ITEM CATEGORY TERM FORM
+ **/
+#feed-item-category-term-action {
+	float: left;
+}
+
+
+/**
+ * FEED CATEGORY TERM FORM
+ **/
+.feed-category-term-name {
+	float: left;
+  line-height: 1.7em;
+  padding: 5px 0 5px 5px;
+}
+.form-item-feed-category-term-add-term-name {
+	float: left;
+}
+.feed-category-term-add-submit {
+	float: left;
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+
+/**
+ * FEED CATEGORY AUTOCOMPLETE ELEMENT
+ **/
+.feed-category-term-autocomplete .form-item {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.feed-category-term-autocomplete .form-item label {
+	font-style: italic;
+	font-weight: normal;
+}
+.feed-category-term-autocomplete .feed-category-term-autocomplete-term-container {
+	width: 100%;
+	float: left;
+}
+.feed-category-term-autocomplete .feed-category-term-autocomplete-term {
+	margin: 5px 10px 5px 0;
+  padding: 5px 10px;
+  float: left;
+  background: #fff;
+  border: 1px solid #c0c0c0;
+}
+.feed-category-term-autocomplete .feed-category-term-autocomplete-remove {
+  margin-right: 10px;
+}
+.feed-category-term-autocomplete #autocomplete {
+	border: 1px solid #c0c0c0;
+	background: #fff;
+}
+.feed-category-term-autocomplete #autocomplete ul,
+.feed-category-term-autocomplete #autocomplete li {
+	padding-left: 0 !important;
+  margin-left: 0 !important;
+  background-image: none !important;
+	list-style: none;
+}
+.feed-category-term-autocomplete #autocomplete li {
+	padding: 2px 4px !important;
+}
+.feed-category-term-autocomplete #autocomplete li.selected,
+.feed-category-term-autocomplete #autocomplete li:hover {
+	background: #0072b9 !important;
+	color: #fff;
+}
+.feed-category-term-autocomplete .feed-ac-selection .feed-ac-list-container {
+	background: #fff;
+	border: 1px solid #c0c0c0;
+}
+.feed-category-term-autocomplete .feed-ac-list-container {
+  max-height: 100px;
+  overflow-y: scroll;
+}
+.feed-category-term-autocomplete .feed-ac-list {
+	padding: 0 !important;
+	margin: 0 !important;
+}
+.feed-category-term-autocomplete .feed-ac-selection li.feed-ac-list-item {
+	background: #fff;
+	background-image: none !important;
+  padding: 2px 5px !important;
+  margin: 0 !important;
+}
+.feed-category-term-autocomplete .feed-ac-selection li.feed-ac-list-item-highlight {
+	background: #0072b9 !important;
+	color: #fff;
+}
+.feed-category-autocomplete-disabled {}
+.feed-category-autocomplete-disabled-text {
+  margin: 5px 0;
+  padding: 5px 10px;
+  background: #FFEE66;
+  border: 1px solid #EEDD55;
+  color: #884400;
+}
+
+
+/**
+ * FEED ITEM OVERVIEW FORM
+ **/
+#feed-item-overview-form #edit-select {
+  float: right;
+  width: 642px;
+}
+#feed-item-operation-action-container {
+	padding: 10px 10px 0 10px;
+}
+#feed-item-operation-action-container .form-type-feed-category-term-autocomplete {
+	display: block;
+	clear: both;
+	margin: 0;
+}
+#feed-item-operation-action-container .form-item-select-operation-action,
+#feed-item-operation-action-container .feed-item-operation-submit {
+	float: left;
+}
+#feed-item-operation-action-container .feed-item-operation-submit {
+	margin-top: 32px;
+	margin-left: 10px;
+}
+#feed-item-overview-form .feed-category-autocomplete-disabled,
+#feed-item-overview-form .form-type-feed-category-term-autocomplete {
+	display: block;
+  margin-top: 0;
+  padding: 0 10px;
+}
+
+
+/**
+ * FEED SOURCE FORM
+ **/
+#feedGroupUserDrag .group-title .feed-group-name {
+  font-weight: bold;
+	font-size: 14px;
+}
+#feedGroupUserDrag .group-title .feed-group-description {
+  font-size: 14px;
+}
+#feedGroupUserDrag tr.group-populated {
+	display: none;
+}
+#feedGroupUserDrag tr.group-message {
+	font-style: italic;
+}
+#feedGroupUserDrag .feed-group-header-links,
+#feedGroupUserDrag .feed-group-links {
+	border-left: 1px solid #ccc;
+}
+#feedGroupUserDrag .feed-group-links a {
+	margin-right: 20px;
+}
+
+
+/**
+ * FEED ITEM DETAIL POPUP
+ **/
+.feed-item-detailed-overlay {
+  position: fixed;
+  z-index: 100;
+	background: #000;
+	height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+  filter: alpha(opacity=30);
+  -moz-opacity: 0.3;
+  opacity: 0.3;
+}
+.feed-item-detailed-wrapper {
+	position: absolute;
+  z-index: 101;
+  width: 500px;
+  height: 200px;
+  overflow: auto;
+  top: 50%;
+  left: 50%;
+  margin-top: -100px;
+  margin-left: -250px;
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #aaa;
+}
+.feed-item-detailed-wrapper .feed-item-detailed-close {
+	background: transparent url('images/close.png') no-repeat center center;
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	cursor: pointer;
+}
+.feed-item-detailed-wrapper .feed-item-detailed-field-title {
+	font-weight: bold;
+	text-transform: capitalize;
+}
+.feed-item-detailed-wrapper .feed-item-detailed-field {
+	margin-bottom: 10px;
+}
+.feed-item-detailed-wrapper .feed-item-detailed-field img {
+  margin: 5px;
+}
+
+
+/**
+ * FEED WIDGET FORM
+ */
+.feed-widget-form-option {
+	float: left;
+	width: 332px;
+}
+.feed-widget-form-preview {
+	padding: 10px;
+	width: 565px;
+	float: right;
+}
+#edit-widget-feed-item-fields {
+  margin-top: 10px;
+}
+#feed-widget-form .tabledrag-changed-warning,
+#feed-widget-field-table .tabledrag-changed,
+#feed-widget-item-field-table .tabledrag-changed {
+  display: none !important;
+}
+
+/**
+ * FEED WIDGET OVERVIEW
+ */
+.feed-widget-code {
+	padding: 0 !important;
+}
+.feed-widget-code pre {
+	margin: 0 !important;
+	padding: 5px 15px;
+	border: none !important; 
+}
+.feed-widget-code-row {
+	display: none;
+}
+.feed-widget-overview-table .feed-col-1 {
+	width: 300px;
+}
+
+/**
+ * FEED NEWSLETTER OVERVIEW
+ */
+#feed-newsletter-form #edit-newsletter {
+  width: 270px;
+  float: left;
+}
+#feed-newsletter-form #edit-list {
+  width: 630px;
+  float: right;
+}
+#feed-newsletter-form input.form-text {
+  width: 225px;
+}
+#feed-newsletter-form #edit-newsletter-name {
+  width: 255px;
+}
+#feed-newsletter-form > div > .feed-fieldset > .feed-fieldset-legend-wrapper > span {
+  padding: 0px;
+}
+#feed-newsletter-form > div > .feed-fieldset > .feed-fieldset-wrapper > .form-item {
+  padding: 0 0 5px 0;
+  margin: 0px;
+}
+#feed-newsletter-form #edit-newsletters {
+  margin-bottom: 10px;
+}
+#feed-newsletter-form #edit-newsletter-submit {
+  margin-top: 10px;
+}
+
+/**
+ * FEED NEWSLETTER SUBSCRIBER OVERVIEW
+ */
+#feed-newsletter-subscriber-form #edit-subscriber {
+  width: 270px;
+  float: left;
+}
+#feed-newsletter-subscriber-form #edit-list {
+  width: 630px;
+  float: right;
+}
+#feed-newsletter-subscriber-form input.form-text {
+  width: 225px;
+}
+#feed-newsletter-subscriber-form .feed-fieldset .feed-fieldset-legend-wrapper span {
+  padding: 0px;
+}
+#feed-newsletter-subscriber-form .feed-fieldset .feed-fieldset-wrapper .form-item {
+  padding: 0 0 5px 0;
+  margin: 0px;
+}
+#feed-newsletter-subscriber-form #edit-subscribers {
+  margin-bottom: 10px;
+}
+#feed-newsletter-subscriber-form #edit-newsletter-submit {
+  margin-top: 10px;
+}

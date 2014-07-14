@@ -1,0 +1,8 @@
+(function($){
+  FeedLoader = function() {
+    
+  };
+  
+  
+  
+})(jQuery);
